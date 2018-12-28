@@ -19,7 +19,7 @@ class Auth0 extends React.Component {
     try {
       authResult = await authService.renewSession();
     } catch (error) {
-      onSessionRenewed({ error, authResult: null });
+      return onSessionRenewed({ error, authResult: null });
     }
 
     // Run callback with authentication information

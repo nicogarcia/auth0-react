@@ -1,0 +1,9 @@
+{
+  "development": {
+    "domain": "dev-cli-test.auth0.com",
+    "redirectUri": "http://localhost:3000/callback",
+    "clientID": "RKbMvAU3Dpt1zywrFbjh8YOOPVd4yjTd",
+    "scope": "openid email profile",
+    "logoutUri": "http://localhost:3000/"
+  }
+}

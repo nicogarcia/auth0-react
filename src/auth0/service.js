@@ -11,11 +11,14 @@ export default class AuthService {
   expiresAt;
   userProfile;
   webAuth;
+  clientID;
+  logoutRedirectUri;
 
   constructor({
     domain,
     clientID,
     redirectUri,
+    logoutRedirectUri,
     responseType = AuthService.defaultResponseType,
     scope = AuthService.defaultScope
   }) {
@@ -26,6 +29,9 @@ export default class AuthService {
       responseType,
       scope
     });
+
+    this.clientID = clientID;
+    this.logoutRedirectUri = logoutRedirectUri;
   }
 
   login = () => {
@@ -103,15 +109,14 @@ export default class AuthService {
             if (err.error === "login_required") {
               // TODO: Very important step that is not in current Quickstarts code! (is shown as Troubleshooting)
               // TODO: Improve messaging
-              console.warn("You must use your own social authentication keys.");
+              console.warn("You must use your own social authentication keys for social login to work correctly. More info: ");
             }
 
             if (err.error === "consent_required") {
               // TODO: Very important step that is not in current Quickstarts code! (happens at least on scope addition)
-              return this.login();
+              console.warn("User must authorize authorize application, please, run login again.");
             }
 
-            this.logout();
             return reject(err);
           }
 
@@ -126,7 +131,14 @@ export default class AuthService {
     }
   };
 
-  logout = () => this.clearSession();
+  logout = () => {
+    this.clearSession();
+
+    this.webAuth.logout({
+      returnTo: this.logoutRedirectUri,
+      clientID: this.clientID
+    });
+  };
 
   isAuthenticated = () => {
     // Check whether the current time is past the
