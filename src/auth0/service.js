@@ -109,12 +109,14 @@ export default class AuthService {
             if (err.error === "login_required") {
               // TODO: Very important step that is not in current Quickstarts code! (is shown as Troubleshooting)
               // TODO: Improve messaging
-              console.warn("You must use your own social authentication keys for social login to work correctly. More info: ");
-            }
-
-            if (err.error === "consent_required") {
+              err.explanation =
+                "You must use your own social authentication keys for social login to work correctly. " +
+                "More info: https://auth0.com/docs/connections/social/devkeys";
+            } else if (err.error === "consent_required") {
               // TODO: Very important step that is not in current Quickstarts code! (happens at least on scope addition)
-              console.warn("User must authorize authorize application, please, run login again.");
+              err.explanation =
+                "User must re-authorize application, please, run login again. You may want to do this automatically " +
+                "or add a login button when this `consent_required` error happens.";
             }
 
             return reject(err);
