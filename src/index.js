@@ -1,14 +1,18 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import * as serviceWorker from './serviceWorker';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import * as serviceWorker from "./serviceWorker";
 import { BrowserRouter as Router } from "react-router-dom";
 import auth0Config from "./auth0/config.json";
 import AuthService from "./auth0/service";
 import SampleAppWithAuth from "./auth0/SampleAppWithAuth";
 
 // Initialize Auth0 using configuration file, you may want to add logic for development/production config
-const authService = new AuthService(auth0Config.development);
+const authService = new AuthService(
+  process.env.NODE_ENV === "production"
+    ? auth0Config.production
+    : auth0Config.development
+);
 
 ReactDOM.render(
   <Router>
