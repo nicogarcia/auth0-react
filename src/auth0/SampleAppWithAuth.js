@@ -1,9 +1,6 @@
 import React from "react";
-import { Route, withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
-import Auth0 from "./Auth0";
 import AuthService from "./service";
-import CallbackPage from "./CallbackPage";
 import { newAPIClient } from "./helpers";
 
 class SampleAppWithAuth extends React.Component {
@@ -23,6 +20,31 @@ class SampleAppWithAuth extends React.Component {
     authError: null
   };
 
+  async componentDidMount() {
+    const { authService } = this.props;
+
+    let authResult = null;
+
+    try {
+      authResult = await authService.handleAuthentication();
+
+      this.handleSessionRenewal({ error: null, authResult });
+    } catch (error) {
+      try {
+        authResult = await authService.renewSession();
+        this.handleSessionRenewal({ error: null, authResult });
+      } catch (error) {
+        this.handleSessionRenewal({ error, authResult: null });
+      }
+    }
+  }
+
+  handleLogin = () => {
+    const { authService } = this.props;
+
+    authService.login();
+  };
+
   handleLogout = () => {
     const { authService } = this.props;
 
@@ -30,22 +52,6 @@ class SampleAppWithAuth extends React.Component {
 
     // Update authentication status
     this.setState({ isAuthenticated: authService.isAuthenticated() });
-  };
-
-  handleLoginFinish = ({ error }) => {
-    const { history, authService } = this.props;
-
-    // Set loading flag to false and update authentication status and error
-    this.setState({
-      loadingAuth: false,
-      isAuthenticated: authService.isAuthenticated()
-    });
-
-    // [Optional] Check for login result and redirect or handle errors
-    if (!error) {
-      // Redirect to home page if no errors
-      history.replace("/");
-    }
   };
 
   handleSessionRenewal = ({ error }) => {
@@ -67,58 +73,21 @@ class SampleAppWithAuth extends React.Component {
 
     return (
       <div>
-        {/* REQUIRED: You have to mount the Auth0 component to handle the session renewal */}
-        <Auth0
-          authService={authService}
-          onSessionRenewed={this.handleSessionRenewal}
-        />
-
-        {/* REQUIRED: You have to create a callback route to receive authentication information after logging in */}
-        <Route
-          exact
-          // This should be the callback route (relative path) you configured your app to allow
-          path="/callback"
-          render={() => (
-            /* REQUIRED: This is the callback page component that reads the received authentication information */
-            <CallbackPage
-              authService={authService}
-              // This function is executed whenever the authentication information is read either with or without errors
-              onFinish={this.handleLoginFinish}
-              // REQUIRED: The result of this render function is rendered while reading the authentication information
-              //           In this case, it's nothing (`null`) while reading and an error component if there's an error
-              render={({ error }) =>
-                error ? <AuthError error={error} /> : null
-              }
-            />
-          )}
-        />
-
-        {/*
-          OPTIONAL: This is the rest of your application, in this example we use the `loadingAuth` flag to show a
-          loading message while renewing the session on first page load and a sample home page when the renewal is
-          completed.
-
-          IMPORTANT: It's not necessary to block the whole UI from rendering while checking the session.
-        */}
-        <Route
-          exact
-          path="/"
-          render={() =>
-            loadingAuth ? (
-              "Loading authentication status..."
-            ) : (
-              <SampleHome
-                authError={authError}
-                authService={authService}
-                apiClient={apiClient}
-                // This sample home page shows a different message according to whether you're authenticated or not
-                isAuthenticated={isAuthenticated}
-                // This function is executed when the home page's logout button is clicked
-                onLogout={this.handleLogout}
-              />
-            )
-          }
-        />
+        {/* IMPORTANT: It's not necessary to block the whole UI from rendering while checking the session.*/}
+        {loadingAuth ? (
+          "Loading authentication status..."
+        ) : (
+          <SampleHome
+            authError={authError}
+            authService={authService}
+            apiClient={apiClient}
+            // This sample home page shows a different message according to whether you're authenticated or not
+            isAuthenticated={isAuthenticated}
+            onLogin={this.handleLogin}
+            // This function is executed when the home page's logout button is clicked
+            onLogout={this.handleLogout}
+          />
+        )}
       </div>
     );
   }
@@ -130,6 +99,7 @@ class SampleAppWithAuth extends React.Component {
 const SampleHome = ({
   isAuthenticated,
   authService,
+  onLogin,
   onLogout,
   authError,
   apiClient
@@ -154,9 +124,15 @@ const SampleHome = ({
     <div>
       <h3>You are not authenticated</h3>
 
-      <button onClick={authService.login}>Login</button>
+      <button onClick={onLogin}>Login</button>
 
-      {authError && <AuthError error={authError} />}
+      {authError && (
+        <div>
+          <h2>Authentication error</h2>
+
+          <pre>{JSON.stringify(authError, null, 2)}</pre>
+        </div>
+      )}
 
       <hr />
 
@@ -165,21 +141,6 @@ const SampleHome = ({
       <hr />
     </div>
   );
-
-/**
- * Sample error component to show if an authentication error happens
- *
- * Uses withRouter to access history and be able to return to home page.
- */
-const AuthError = withRouter(({ history, error }) => (
-  <div>
-    <h2>Authentication error</h2>
-
-    <pre>{JSON.stringify(error, null, 2)}</pre>
-
-    <button onClick={() => history.push("/")}>Go to home</button>
-  </div>
-));
 
 /**
  * Sample component that calls an API
@@ -242,4 +203,4 @@ class APICaller extends React.Component {
   }
 }
 
-export default withRouter(SampleAppWithAuth);
+export default SampleAppWithAuth;
