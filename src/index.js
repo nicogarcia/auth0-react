@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import * as serviceWorker from "./serviceWorker";
-import { BrowserRouter as Router } from "react-router-dom";
 import auth0Config from "./auth0/config.json";
 import AuthService from "./auth0/service";
 import SampleAppWithAuth from "./auth0/SampleAppWithAuth";
@@ -15,9 +14,7 @@ const authService = new AuthService(
 );
 
 ReactDOM.render(
-  <Router>
-    <SampleAppWithAuth authService={authService} />
-  </Router>,
+  <SampleAppWithAuth authService={authService} />,
   document.getElementById("root")
 );
 

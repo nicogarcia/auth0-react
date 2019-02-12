@@ -47,6 +47,12 @@ export default class AuthService {
   handleAuthentication = async () =>
     new Promise((resolve, reject) =>
       this.webAuth.parseHash((err, authResult) => {
+        window.history.replaceState(
+          "",
+          document.title,
+          window.location.pathname + window.location.search
+        );
+
         if (err) {
           return reject(err);
         }
@@ -118,6 +124,8 @@ export default class AuthService {
                 "User must re-authorize application, please, run login again. You may want to do this automatically " +
                 "or add a login button when this `consent_required` error happens.";
             }
+
+            // TODO: If loggedIn in localstorage is changed by hand then it'll hang until timeout
 
             return reject(err);
           }

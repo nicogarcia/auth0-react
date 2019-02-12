@@ -1,7 +1,7 @@
 import React from "react";
+import axios from "axios";
 import PropTypes from "prop-types";
 import AuthService from "./service";
-import { newAPIClient } from "./helpers";
 
 class SampleAppWithAuth extends React.Component {
   static propTypes = {
@@ -23,18 +23,16 @@ class SampleAppWithAuth extends React.Component {
   async componentDidMount() {
     const { authService } = this.props;
 
-    let authResult = null;
-
     try {
-      authResult = await authService.handleAuthentication();
+      await authService.handleAuthentication();
 
-      this.handleSessionRenewal({ error: null, authResult });
+      this.handleSessionRenewal({ error: null });
     } catch (error) {
       try {
-        authResult = await authService.renewSession();
-        this.handleSessionRenewal({ error: null, authResult });
+        await authService.renewSession();
+        this.handleSessionRenewal({ error: null });
       } catch (error) {
-        this.handleSessionRenewal({ error, authResult: null });
+        this.handleSessionRenewal({ error });
       }
     }
   }
@@ -94,6 +92,23 @@ class SampleAppWithAuth extends React.Component {
 }
 
 /**
+ * Creates an axios (http client library) client with defaults to work with Auth0.
+ * The most important default is the Authorization header.
+ *
+ * @param baseURL API base url. Eg. your-api.com
+ * @param accessToken Access token to use in the Authorization header
+ * @param timeout Client timeout
+ *
+ * @return {AxiosInstance}
+ */
+export const newAPIClient = (baseURL, accessToken = null, timeout = 2000) =>
+  axios.create({
+    baseURL,
+    timeout,
+    headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+  });
+
+/**
  * Sample Home component to show the user profile and login and logout buttons.
  */
 const SampleHome = ({
@@ -106,7 +121,7 @@ const SampleHome = ({
 }) =>
   isAuthenticated ? (
     <div>
-      <h3>You are authenticated</h3>
+      <h1>You are authenticated</h1>
       <button onClick={onLogout}>Logout</button>
 
       <hr />
@@ -122,7 +137,7 @@ const SampleHome = ({
     </div>
   ) : (
     <div>
-      <h3>You are not authenticated</h3>
+      <h1>You are not authenticated</h1>
 
       <button onClick={onLogin}>Login</button>
 
@@ -153,18 +168,13 @@ class APICaller extends React.Component {
 
   state = { loading: false, result: null, error: null };
 
-  apiClient = null;
-
-  constructor(props) {
-    super(props);
-    this.apiClient = props.apiClient;
-  }
-
   callAPI = async () => {
+    const { apiClient } = this.props;
+
     this.setState({ loading: true });
 
     try {
-      const result = await this.apiClient.get("/private");
+      const result = await apiClient.get("/private");
 
       this.setState({ result: result.response, error: null });
     } catch (error) {
@@ -179,7 +189,7 @@ class APICaller extends React.Component {
 
     return (
       <div>
-        <h3>API Caller</h3>
+        <h1>API Caller</h1>
         <button onClick={this.callAPI}>Call API</button>
 
         {loading ? (
