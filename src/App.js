@@ -1,121 +1,155 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 // Import the SDK to validate the prop type
 import Auth0 from "@auth0/auth0-login";
 
-import APICaller from './APICaller';
+function App({ auth0, auth0Config, apiBaseURL }) {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+  const [apiResponse, setAPIResponse] = useState(null);
+  const [apiError, setAPIError] = useState(null);
 
-class App extends React.Component {
-  static propTypes = {
-    // Receive Auth0 SDK instance
-    auth0: PropTypes.instanceOf(Auth0),
+  // Initialize Auth0 SDK
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setLoading(true);
 
-    // Receive the API calling function for protected endpoints
-    callAPIWithToken: PropTypes.func.isRequired,
+        await auth0.init();
 
-    // Receive the API calling function for public endpoints
-    callAPIWithoutToken: PropTypes.func.isRequired,
-  };
+        setUser(await auth0.getUser());
+        setError(null);
+      } catch (error) {
+        setUser(null);
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Keep track of the user profile and possible errors
-  state = { user: null, error: null };
+    init();
+  }, [auth0]);
 
-  async componentDidMount() {
-    // Initialize app state with auth information
-    await this.initializeAuth();
+  async function handleLoginClick() {
+    const { redirect_uri } = auth0Config;
+
+    // Start login flow using redirect mode
+    await auth0.loginWithRedirect({ redirect_uri });
   }
 
-  // Initializes the Auth0 SDK instance and loads user info
-  initializeAuth = async () => {
-    // Get the Auth0 SDK instance
-    const { auth0 } = this.props;
+  async function handleLogoutClick() {
+    auth0.logout();
+  }
+
+  async function callPrivateEndpoint() {
+    let headers = {};
+    try {
+      // Get the access_token from Auth0 SDK
+      const accessToken = await auth0.getTokenSilently();
+
+      // Set up Authorization header using access_token
+      headers = { Authorization: "Bearer " + accessToken };
+    } catch (error) {
+      console.log("could not get an access token");
+    }
 
     try {
-      // Initialize the auth0 instance
-      // (required to check if user is already logged in)
-      await auth0.init();
+      // Make the HTTP GET call to the API private endpoint using the access_token
+      const response = await fetch(`${apiBaseURL}/api/private`, { headers });
 
-      // Update the user in state
-      await this.updateUser(auth0);
+      const body = await response.json();
+      setAPIResponse(body);
+      setAPIError(null);
     } catch (error) {
-      // Handle possible errors
-      this.setState({ user: null, error });
+      setAPIError(error);
+      setAPIResponse(null);
     }
   }
 
-  // Read the user profile from the Auth0 SDK instance and update state.
-  // The profile includes email, name, user id, etc.
-  updateUser = async (auth0) => {
-    const user = await auth0.getUser();
-
-    this.setState({ user, error: null });
-  };
-
-  handleLoginClick = async () => {
-    const { auth0 } = this.props;
-
+  async function callPublicEndpoint() {
     try {
-      // Start login process using popup mode
-      await auth0.loginWithPopup();
-      
-      // Update user
-      await this.updateUser(auth0);
+      // Make the HTTP GET call to the API public endpoint
+      const response = await fetch(`${apiBaseURL}/api/public`);
+
+      const body = await response.json();
+      setAPIResponse(body);
+      setAPIError(null);
     } catch (error) {
-      // Handle possible login errors
-      this.setState({ error, user: null });
+      setAPIError(error);
+      setAPIResponse(null);
     }
-  };
-  
-  handleLogoutClick = async () => this.props.auth0.logout(/* params */);
-
-  render() {
-    const { callAPIWithToken, callAPIWithoutToken } = this.props;
-    const { error, user } = this.state;
-
-    return (
-      <div>
-        {user ?
-
-          <div>
-            {/* Logged in section */}
-            <h2>Logged in as {user.email}</h2>
-
-            {/* Logout button */}
-            <button onClick={this.handleLogoutClick}>Logout</button>
-
-            {/* User profile in JSON format */}
-            <pre>{JSON.stringify(user, null, 2)}</pre>
-          </div>
-
-          :
-
-          <div>
-            {/* Logged out section */}
-
-            {/* Login button */}
-            <button onClick={this.handleLoginClick}>Login</button>
-
-            {error &&
-              <div>
-                {/* Authentication errors */}
-                <h4>Error</h4>
-
-                {/* Error description in JSON format */}
-                <pre>{JSON.stringify(error, null, 2)}</pre>
-              </div>
-            }
-          </div>
-        } 
-        
-        {/* API Calling section */}
-        <APICaller
-          callAPIWithToken={callAPIWithToken}
-          callAPIWithoutToken={callAPIWithoutToken}
-        />
-      </div>
-    );
   }
+
+  return loading ? (
+    "Loading..."
+  ) : (
+    <>
+      {user ? (
+        <>
+          {/* Logged in section */}
+
+          <p>
+            Logged in as <strong>{user.email}</strong>
+            <button onClick={handleLogoutClick}>Logout</button>
+          </p>
+
+          {/* User profile in JSON format */}
+          <h2>Raw Profile</h2>
+          <pre>{JSON.stringify(user, null, 2)}</pre>
+        </>
+      ) : (
+        <>
+          {/* Logged out section */}
+          <p>
+            <strong>Not logged in</strong>
+            <button onClick={handleLoginClick}>Login</button>
+          </p>
+
+          {/* Authentication errors */}
+          {error && (
+            <>
+              <h4>Error</h4>
+
+              {/* Error description in JSON format */}
+              <pre>{JSON.stringify(error, null, 2)}</pre>
+            </>
+          )}
+        </>
+      )}
+
+      <h2>API calls</h2>
+
+      <button onClick={callPrivateEndpoint}>Call Private endpoint</button>
+      <button onClick={callPublicEndpoint}>Call Public endpoint</button>
+
+      {apiResponse && (
+        <>
+          {/* API response in JSON format */}
+          <h3>Response</h3>
+          <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
+        </>
+      )}
+
+      {apiError && (
+        <>
+          {/* API error in JSON format */}
+          <h3>Error</h3>
+          <pre>{JSON.stringify(apiError, null, 2)}</pre>
+        </>
+      )}
+    </>
+  );
 }
+
+App.propTypes = {
+  // Receive Auth0 SDK instance
+  auth0: PropTypes.instanceOf(Auth0).isRequired,
+  apiBaseURL: PropTypes.string.isRequired,
+  auth0Config: PropTypes.shape({
+    redirect_uri: PropTypes.string.isRequired
+  })
+};
 
 export default App;
