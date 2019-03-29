@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@auth0/auth0-login": "^0.0.1-alpha.15",
+    "@auth0/auth0-spa-js": "^0.0.1-alpha.17",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-router": "^5.0.0",

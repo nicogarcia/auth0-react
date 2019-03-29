@@ -6,7 +6,7 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
 // Import Auth0 SDK
-import Auth0 from "@auth0/auth0-login";
+import Auth0 from "@auth0/auth0-spa-js";
 import { Route } from "react-router";
 import Callback from "./Callback";
 

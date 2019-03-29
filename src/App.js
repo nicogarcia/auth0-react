@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 // Import the SDK to validate the prop type
-import Auth0 from "@auth0/auth0-login";
+import Auth0 from "@auth0/auth0-spa-js";
 
 function App({ auth0, auth0Config, apiBaseURL }) {
   const [loading, setLoading] = useState(true);
