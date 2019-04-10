@@ -1,0 +1,61 @@
+{
+  "version": 2,
+  "name": "spa-with-auth0",
+  "build": {
+    "env": {
+      "REACT_APP_AUTH0_DOMAIN": "@spa-with-auth0--AUTH0_DOMAIN",
+      "REACT_APP_AUTH0_REDIRECT_URI": "@spa-with-auth0--AUTH0_REDIRECT_URI",
+      "REACT_APP_AUTH0_CLIENT_ID": "@spa-with-auth0--AUTH0_CLIENT_ID",
+      "REACT_APP_AUTH0_LOGOUT_REDIRECT_URI": "@spa-with-auth0--AUTH0_LOGOUT_REDIRECT_URI",
+      "REACT_APP_AUTH0_AUDIENCE": "@spa-with-auth0--AUTH0_AUDIENCE"
+    }
+  },
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@now/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "headers": {
+        "cache-control": "s-maxage=31536000,immutable"
+      },
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/favicon.ico"
+    },
+    {
+      "src": "/asset-manifest.json",
+      "dest": "/asset-manifest.json"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/precache-manifest.(.*)",
+      "dest": "/precache-manifest.$1"
+    },
+    {
+      "src": "/service-worker.js",
+      "headers": {
+        "cache-control": "s-maxage=0"
+      },
+      "dest": "/service-worker.js"
+    },
+    {
+      "src": "/(.*)",
+      "headers": {
+        "cache-control": "s-maxage=0"
+      },
+      "dest": "/index.html"
+    }
+  ]
+}
