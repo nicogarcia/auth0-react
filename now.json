@@ -3,11 +3,11 @@
   "name": "spa-with-auth0",
   "build": {
     "env": {
-      "REACT_APP_AUTH0_DOMAIN": "@spa-with-auth0--AUTH0_DOMAIN",
-      "REACT_APP_AUTH0_REDIRECT_URI": "@spa-with-auth0--AUTH0_REDIRECT_URI",
-      "REACT_APP_AUTH0_CLIENT_ID": "@spa-with-auth0--AUTH0_CLIENT_ID",
-      "REACT_APP_AUTH0_LOGOUT_REDIRECT_URI": "@spa-with-auth0--AUTH0_LOGOUT_REDIRECT_URI",
-      "REACT_APP_AUTH0_AUDIENCE": "@spa-with-auth0--AUTH0_AUDIENCE"
+      "REACT_APP_AUTH0_DOMAIN": "@spa-with-auth0--auth0_domain",
+      "REACT_APP_AUTH0_REDIRECT_URI": "@spa-with-auth0--auth0_redirect_uri",
+      "REACT_APP_AUTH0_CLIENT_ID": "@spa-with-auth0--auth0_client_id",
+      "REACT_APP_AUTH0_LOGOUT_REDIRECT_URI": "@spa-with-auth0--auth0_logout_redirect_uri",
+      "REACT_APP_AUTH0_AUDIENCE": "@spa-with-auth0--auth0_audience"
     }
   },
   "builds": [
