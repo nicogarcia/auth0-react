@@ -11,17 +11,25 @@ function App({ auth0, auth0Config, apiBaseURL }) {
   const [apiResponse, setAPIResponse] = useState(null);
   const [apiError, setAPIError] = useState(null);
 
+  // const [auth0, setAuth0] = useState(null);
+
   // Initialize Auth0 SDK
   useEffect(() => {
+    if (auth0 === null) {
+      return;
+    }
     const init = async () => {
       try {
         setLoading(true);
-
-        await auth0.init();
-
-        setUser(await auth0.getUser());
+        // const auth0 = await configureClient();
+        console.log('Auth0Client in App: ', auth0);
+        //setAuth0(auth0);
+        const user = await auth0.getUser();
+        console.log('auth0.getUser(): ', user);
+        setUser(user);
         setError(null);
       } catch (error) {
+        console.log('Error: ', error);
         setUser(null);
         setError(error);
       } finally {
@@ -145,7 +153,7 @@ function App({ auth0, auth0Config, apiBaseURL }) {
 
 App.propTypes = {
   // Receive Auth0 SDK instance
-  auth0: PropTypes.instanceOf(Auth0).isRequired,
+  configureClient: PropTypes.func.isRequired,
   apiBaseURL: PropTypes.string.isRequired,
   auth0Config: PropTypes.shape({
     redirect_uri: PropTypes.string.isRequired

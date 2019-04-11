@@ -6,7 +6,7 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
 // Import Auth0 SDK
-import Auth0 from "@auth0/auth0-spa-js";
+import createAuth0Client from "@auth0/auth0-spa-js";
 import { Route } from "react-router";
 import Callback from "./Callback";
 
@@ -19,7 +19,8 @@ const auth0Config = {
 };
 
 // Instantiate the SDK
-const auth0 = new Auth0(auth0Config);
+let auth0 = null;
+createAuth0Client(auth0Config).then(client => auth0 = client);
 
 // Leverage audience identifier being the API URL to have only one setting for both
 const apiBaseURL = auth0Config.audience;

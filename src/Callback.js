@@ -7,6 +7,9 @@ function Callback({ history, auth0 }) {
   // Handle callback (only runs once)
   useEffect(() => {
     async function handleCallback() {
+      //const auth0 = await configureClient();
+      console.log('Auth0Client in callback: ', auth0);
+
       try {
         await auth0.handleRedirectCallback();
         goHome();
