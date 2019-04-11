@@ -63,7 +63,7 @@ function App({ auth0, auth0Config, apiBaseURL }) {
       setAPIResponse(body);
       setAPIError(null);
     } catch (error) {
-      setAPIError(error);
+      setAPIError(error.toString());
       setAPIResponse(null);
     }
   }
@@ -77,7 +77,7 @@ function App({ auth0, auth0Config, apiBaseURL }) {
       setAPIResponse(body);
       setAPIError(null);
     } catch (error) {
-      setAPIError(error);
+      setAPIError(error.toString());
       setAPIResponse(null);
     }
   }
