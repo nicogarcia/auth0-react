@@ -1,23 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { withRouter } from "react-router";
+import { AppContext } from "./App";
 
-function Callback({ history, auth0 }) {
+function Callback({ history }) {
   const [error, setError] = useState(null);
+  const { auth0 } = useContext(AppContext);
 
-  // Handle callback (only runs once)
-  useEffect(() => {
-    async function handleCallback() {
-      try {
-        await auth0.handleRedirectCallback();
-        goHome();
-      } catch (error) {
-        setError(error);
-        console.log(error);
+  // Handle callback
+  useEffect(
+    () => {
+      if (!auth0) return;
+
+      async function handleCallback() {
+        try {
+          await auth0.handleRedirectCallback();
+          goHome();
+        } catch (error) {
+          setError(error.toString());
+        }
       }
-    }
 
-    handleCallback();
-  }, []);
+      handleCallback();
+    },
+    [auth0]
+  );
 
   function goHome() {
     history.push("/");
