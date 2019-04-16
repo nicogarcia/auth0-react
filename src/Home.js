@@ -9,6 +9,9 @@ function Home() {
   const [apiResponse, setAPIResponse] = useState(null);
   const [apiError, setAPIError] = useState(null);
 
+  const publicApiEndpoint = "/api/public";
+  const privateApiEndpoint = "/api/private";
+
   useEffect(
     () => {
       if (!auth0) return;
@@ -56,13 +59,15 @@ function Home() {
 
     try {
       // Make the HTTP GET call to the API private endpoint using the access_token
-      const response = await fetch(`${apiBaseURL}/api/private`, { headers });
+      const response = await fetch(apiBaseURL + privateApiEndpoint, {
+        headers
+      });
 
       const body = await response.json();
       setAPIResponse(body);
       setAPIError(null);
     } catch (error) {
-      setAPIError(error);
+      setAPIError(error.toString());
       setAPIResponse(null);
     }
   }
@@ -70,74 +75,100 @@ function Home() {
   async function callPublicEndpoint() {
     try {
       // Make the HTTP GET call to the API public endpoint
-      const response = await fetch(`${apiBaseURL}/api/public`);
+      const response = await fetch(apiBaseURL + publicApiEndpoint);
 
       const body = await response.json();
       setAPIResponse(body);
       setAPIError(null);
     } catch (error) {
-      setAPIError(error);
+      setAPIError(error.toString());
       setAPIResponse(null);
     }
   }
 
   return loading ? (
-    "Loading..."
+    <>Loading...</>
   ) : (
     <>
-      {user ? (
-        <>
-          {/* Logged in section */}
+      <h1>SPA protected with Auth0</h1>
 
-          <p>
-            Logged in as <strong>{user.email}</strong>
-            <button onClick={handleLogoutClick}>Logout</button>
-          </p>
+      <p>
+        Using tenant <strong>{auth0Config.domain}</strong>
+      </p>
 
-          {/* User profile in JSON format */}
-          <h2>Raw Profile</h2>
-          <pre>{JSON.stringify(user, null, 2)}</pre>
-        </>
-      ) : (
-        <>
-          {/* Logged out section */}
-          <p>
-            <strong>Not logged in</strong>
-            <button onClick={handleLoginClick}>Login</button>
-          </p>
+      <section>
+        <h2>Login</h2>
 
-          {/* Authentication errors */}
-          {error && (
-            <>
-              <h4>Error</h4>
+        {user ? (
+          <>
+            {/* Logged in section */}
 
-              {/* Error description in JSON format */}
-              <pre>{JSON.stringify(error, null, 2)}</pre>
-            </>
-          )}
-        </>
-      )}
+            <p>
+              Logged in as <strong>{user.email}</strong>
+              <button onClick={handleLogoutClick}>Logout</button>
+            </p>
 
-      <h2>API calls</h2>
+            {/* User profile in JSON format */}
+            <h4>Raw Profile</h4>
+            <pre>{JSON.stringify(user, null, 2)}</pre>
+          </>
+        ) : (
+          <>
+            {/* Logged out section */}
+            <p>
+              <strong>Not logged in</strong>
+              <button onClick={handleLoginClick}>Login</button>
+            </p>
 
-      <button onClick={callPrivateEndpoint}>Call Private endpoint</button>
-      <button onClick={callPublicEndpoint}>Call Public endpoint</button>
+            {/* Authentication errors */}
+            {error && (
+              <>
+                <h4>Error</h4>
 
-      {apiResponse && (
-        <>
-          {/* API response in JSON format */}
-          <h3>Response</h3>
-          <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
-        </>
-      )}
+                {/* Error description in JSON format */}
+                <pre>{JSON.stringify(error, null, 2)}</pre>
+              </>
+            )}
+          </>
+        )}
+      </section>
 
-      {apiError && (
-        <>
-          {/* API error in JSON format */}
-          <h3>Error</h3>
-          <pre>{JSON.stringify(apiError, null, 2)}</pre>
-        </>
-      )}
+      <section>
+        <h2>Call your API</h2>
+
+        <p>
+          <strong>API URL: </strong>
+          {apiBaseURL}
+        </p>
+
+        <p>
+          <strong>Private endpoint: </strong>
+          {privateApiEndpoint}
+          <button onClick={callPrivateEndpoint}>Call it!</button>
+        </p>
+
+        <p>
+          <strong>Public endpoint: </strong>
+          {publicApiEndpoint}
+          <button onClick={callPublicEndpoint}>Call it!</button>
+        </p>
+
+        {apiResponse && (
+          <>
+            {/* API response in JSON format */}
+            <h3>Response</h3>
+            <pre>{JSON.stringify(apiResponse, null, 2)}</pre>
+          </>
+        )}
+
+        {apiError && (
+          <>
+            {/* API error in JSON format */}
+            <h3>Error</h3>
+            <pre>{JSON.stringify(apiError, null, 2)}</pre>
+          </>
+        )}
+      </section>
     </>
   );
 }
